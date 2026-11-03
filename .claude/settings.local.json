@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "Bash(ls -la \"$HOME/AppData/Roaming/Opera GX/\" 2>/dev/null | head -20)",
+      "PowerShell(Get-ChildItem -Path \"$env:APPDATA\\\\Opera Software\\\\Opera GX\" -ErrorAction SilentlyContinue | Select-Object Name | head -20)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(pip install *)",
+      "Bash(python -m playwright install chromium)",
+      "Bash(python -m py_compile bot.py fetcher.py config.py db.py)",
+      "Bash(python test_parser.py)",
+      "WebFetch(domain:kyiv.pasport.org.ua)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'Initial commit: Queue bot with Playwright parser and anti-bot tactics *)"
+    ]
+  }
+}
