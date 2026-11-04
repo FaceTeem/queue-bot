@@ -86,6 +86,7 @@ async def _live_dates() -> list[dict]:
             async with async_playwright() as p:
                 browser = await p.chromium.launch(
                     headless=True,
+                    proxy={"server": "http://127.0.0.1:3128"},
                     args=['--disable-blink-features=AutomationControlled']
                 )
                 page = await browser.new_page(

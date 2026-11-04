@@ -12,7 +12,20 @@
       "Bash(python test_parser.py)",
       "WebFetch(domain:kyiv.pasport.org.ua)",
       "Bash(git add *)",
-      "Bash(git commit -m 'Initial commit: Queue bot with Playwright parser and anti-bot tactics *)"
+      "Bash(git commit -m 'Initial commit: Queue bot with Playwright parser and anti-bot tactics *)",
+      "Bash(gh --version)",
+      "Bash(winget install *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(ls -la ~/.ssh/ 2>&1 | head -5)",
+      "Bash(git config *)",
+      "Bash(GIT_ASKPASS_OVERRIDE=1 git push -u origin main)",
+      "Bash(tasklist)",
+      "Bash(python bot.py)",
+      "Bash(tasklist /FI \"IMAGENAME eq python.exe\")",
+      "Bash(pkill -f \"python bot.py\")",
+      "Bash(curl -s -I \"https://warsaw.pasport.org.ua/solutions/e-queue\")"
     ]
   }
 }
