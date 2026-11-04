@@ -84,7 +84,10 @@ async def _live_dates() -> list[dict]:
             log.info(f"Checking {city_name}...")
 
             async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=True)
+                browser = await p.chromium.launch(
+                    headless=True,
+                    args=['--disable-blink-features=AutomationControlled']
+                )
                 page = await browser.new_page(
                     user_agent=_get_random_user_agent()
                 )
