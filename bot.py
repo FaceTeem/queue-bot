@@ -28,8 +28,8 @@ def fmt_date(iso: str) -> str:
 
 def kb(items, prefix, cols=2):
     rows, row = [], []
-    for i, name in enumerate(items):
-        row.append(InlineKeyboardButton(text=name, callback_data=f"{prefix}:{i}"))
+    for name in items:
+        row.append(InlineKeyboardButton(text=name, callback_data=f"{prefix}:{name}"))
         if len(row) == cols:
             rows.append(row); row = []
     if row:
@@ -67,20 +67,20 @@ async def start(m: Message):
 
 @dp.message(Command("subscribe"))
 async def subscribe(m: Message):
-    await m.answer("Оберіть місто:", reply_markup=kb(list(config.CITIES.keys()), "city", cols=3))
+    await m.answer("Оберіть місто:", reply_markup=kb(config.SUBSCRIBE_CITIES, "city", cols=2))
 
 
 @dp.callback_query(F.data.startswith("city:"))
 async def pick_city(c: CallbackQuery):
-    ci = int(c.data.split(":")[1])
-    markup = kb([s for s in config.SERVICES], f"svc:{ci}", cols=1)
-    await c.message.edit_text(f"{config.CITIES[ci]} — яка послуга?", reply_markup=markup)
+    city = c.data.split(":", 1)[1]
+    markup = kb([s for s in config.SERVICES], f"svc:{city}", cols=1)
+    await c.message.edit_text(f"{city} — яка послуга?", reply_markup=markup)
 
 
 @dp.callback_query(F.data.startswith("svc:"))
 async def pick_service(c: CallbackQuery):
-    _, ci, si = c.data.split(":")
-    city, service = config.CITIES[int(ci)], config.SERVICES[int(si)]
+    parts = c.data.split(":", 1)
+    city, service = parts[1].rsplit(":", 1)
     await db.add_sub(c.from_user.id, city, service)
     await c.message.edit_text(f"✅ Підписка: {city}, {service}. Напишу, щойно відкриється черга.")
 
@@ -102,7 +102,8 @@ async def stop(m: Message):
 
 @dp.message(Command("status"))
 async def status(m: Message):
-    await m.answer("Бот працює в режимі демо. Вільні дати показуватимуться тут.")
+    mode_text = "LIVE 🔴" if config.MODE == "live" else "демо 🔵"
+    await m.answer(f"Бот працює в режимі {mode_text}. Вільні дати показуватимуться тут.")
 
 
 async def checker(bot: Bot):
@@ -155,6 +156,60 @@ async def checker(bot: Bot):
         delay = backoff + jitter
         log.debug(f"Next check in {delay}s (interval: {backoff}s, jitter: {jitter}s, errors: {errors})")
         await asyncio.sleep(delay)
+
+
+@dp.message(Command("admin_stats"))
+async def admin_stats(m: Message):
+    if config.ADMIN_ID and m.from_user.id != config.ADMIN_ID:
+        return
+    import sqlite3
+    conn = sqlite3.connect(config.DB_PATH)
+    cur = conn.cursor()
+    cur.execute('SELECT COUNT(DISTINCT user_id) FROM subs')
+    row = cur.fetchone()
+    users = row[0] if row else 0
+    cur.execute('SELECT COUNT(*) FROM subs')
+    row = cur.fetchone()
+    subs = row[0] if row else 0
+    conn.close()
+    await m.answer(f"📊 Користувачів: {users}\n📍 Підписок: {subs}")
+
+
+@dp.message(Command("admin_broadcast"))
+async def admin_broadcast(m: Message):
+    if config.ADMIN_ID and m.from_user.id != config.ADMIN_ID:
+        return
+    text = m.text.replace('/admin_broadcast', '').strip()
+    if not text:
+        await m.answer('Синтаксис: /admin_broadcast текст')
+        return
+    import sqlite3
+    conn = sqlite3.connect(config.DB_PATH)
+    cur = conn.cursor()
+    cur.execute('SELECT DISTINCT user_id FROM subs')
+    users = [row[0] for row in cur.fetchall()]
+    conn.close()
+    sent = 0
+    for uid in users:
+        try:
+            await m.bot.send_message(uid, f'📢 {text}')
+            sent += 1
+        except:
+            pass
+    await m.answer(f'✅ Надіслано {sent} користувачам')
+
+
+@dp.message(Command("admin_logs"))
+async def admin_logs(m: Message):
+    if config.ADMIN_ID and m.from_user.id != config.ADMIN_ID:
+        return
+    try:
+        with open('/home/ec2-user/bot.log', 'r') as f:
+            lines = f.readlines()[-30:]
+            text = ''.join(lines)[-2000:]
+            await m.answer(f'📋 Логи:\n\n{text}')
+    except Exception as e:
+        await m.answer(f'Помилка: {e}')
 
 
 async def main():

@@ -43,4 +43,8 @@ CITIES = {
     "Харків": "kharkiv",
 }
 
+# Cities available for subscription (user-facing)
+# Only Polish cities for testing per-city requests
+SUBSCRIBE_CITIES = ["Варшава", "Краків", "Вроцлав", "Гданськ", "Люблін", "Прага", "Берлін"]
+
 SERVICES = ["Закордонний паспорт", "ID-картка"]
